@@ -1,0 +1,37 @@
+#!/usr/bin/python
+
+import sys
+import time
+
+from dsa_mq.connection import Connection
+
+class Logger(object):
+    def LOG(self, msg):
+        print msg
+
+conf = {
+    'rabbit_userid': 'my_user',
+    'rabbit_password': 'my_password',
+    'rabbit_virtual_host': 'dsa',
+    'rabbit_hosts': ['pubsub01.debian.org', 'pubsub02.debian.org'],
+    'use_ssl': False
+}
+
+logger = Logger()
+conn = Connection(conf=conf, logger=logger)
+
+msg = {
+    'newhead': 'HEAD',
+    'updated': time.time()
+}
+
+error = 0
+try:
+    conn.fanout_send('mail', msg)
+except Exception, e:
+    logger.Log(e)
+    error = 1
+finally:
+    conn.close()
+
+sys.exit(error)
