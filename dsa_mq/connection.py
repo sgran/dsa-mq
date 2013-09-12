@@ -23,8 +23,8 @@ import itertools
 import kombu
 import kombu.connection
 
-from publisher import FanoutPublisher
-from consumer import FanoutConsumer
+from dsa_mq.publisher import FanoutPublisher
+from dsa_mq.consumer import FanoutConsumer
 
 class RPCException(Exception):
 
