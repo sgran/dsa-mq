@@ -24,8 +24,8 @@ import logging
 import kombu
 import kombu.connection
 
-from dsa_mq.publisher import FanoutPublisher
-from dsa_mq.consumer import FanoutConsumer
+from dsa_mq.publisher import FanoutPublisher, DirectPublisher
+from dsa_mq.consumer import FanoutConsumer, DirectConsumer
 
 LOG = logging.getLogger(__name__)
 
@@ -316,9 +316,20 @@ class Connection(object):
         """Create a 'fanout' consumer."""
         self.declare_consumer(FanoutConsumer, queue, callback)
 
+    def declare_direct_consumer(self, topic, callback):
+        """Create a 'direct' queue.
+        In our use, this is generally a msg_id queue used for
+        responses for call/multicall
+        """
+        self.declare_consumer(DirectConsumer, topic, callback)
+
     def fanout_send(self, topic, msg):
         """Send a 'fanout' message."""
         self.publisher_send(FanoutPublisher, topic, msg)
+
+    def direct_send(self, msg_id, msg):
+        """Send a 'direct' message."""
+        self.publisher_send(DirectPublisher, msg_id, msg)
 
     def consume(self, limit=None):
         """Consume from all queues/consumers."""

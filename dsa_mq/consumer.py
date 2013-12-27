@@ -132,3 +132,34 @@ class FanoutConsumer(ConsumerBase):
         super(FanoutConsumer, self).__init__(channel, callback, tag,
                                              name=queue_name,
                                              **options)
+
+class DirectConsumer(ConsumerBase):
+    """Queue/consumer class for 'direct'."""
+
+    def __init__(self, conf, channel, msg_id, callback, tag, **kwargs):
+        """Init a 'direct' queue.
+
+        'channel' is the amqp channel to use
+        'msg_id' is the msg_id to listen on
+        'callback' is the callback to call when messages are received
+        'tag' is a unique ID for the consumer on the channel
+
+        Other kombu options may be passed
+        """
+        # Default options
+        options = {'durable': True,
+                   'queue_arguments': {'x-ha-policy': 'all'},
+                   'auto_delete': True,
+                   'exclusive': False}
+        options.update(kwargs)
+        exchange = kombu.entity.Exchange(name=msg_id,
+                                         type='direct',
+                                         durable=options['durable'],
+                                         auto_delete=options['auto_delete'])
+        super(DirectConsumer, self).__init__(channel,
+                                             callback,
+                                             tag,
+                                             name=msg_id,
+                                             exchange=exchange,
+                                             routing_key=msg_id,
+                                             **options)

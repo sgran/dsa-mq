@@ -64,3 +64,17 @@ class FanoutPublisher(Publisher):
         super(FanoutPublisher, self).__init__(channel, '%s' % topic,
                                               None, type='fanout', **options)
 
+class DirectPublisher(Publisher):
+    """Publisher class for 'direct'."""
+    def __init__(self, conf, channel, msg_id, **kwargs):
+        """init a 'direct' publisher.
+
+        Kombu options may be passed as keyword args to override defaults
+        """
+
+        options = {'durable': True,
+                   'auto_delete': False,
+                   'exclusive': False}
+        options.update(kwargs)
+        super(DirectPublisher, self).__init__(channel, msg_id, msg_id,
+                                              type='direct', **options)
