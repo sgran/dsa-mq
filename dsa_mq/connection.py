@@ -19,12 +19,15 @@
 import time
 import socket
 import itertools
+import logging
 
 import kombu
 import kombu.connection
 
 from dsa_mq.publisher import FanoutPublisher
 from dsa_mq.consumer import FanoutConsumer
+
+LOG = logging.getLogger(__name__)
 
 class RPCException(Exception):
 
@@ -110,8 +113,7 @@ class Connection(object):
             self.connection = None
         self.connection = kombu.connection.BrokerConnection(**params)
         self.connection_errors = self.connection.connection_errors
-        if self.logger:
-            self.logger.LOG("_connect: %s" % self.connection.connection_errors)
+        LOG.debug("_connect: %s" % self.connection.connection_errors)
         self.connection.connect()
         self.channel = self.connection.channel()
 
@@ -132,8 +134,7 @@ class Connection(object):
                 self._connect(params)
                 return
             except (IOError, self.connection_errors) as e:
-                if self.logger:
-                    self.logger.LOG("reconnect: IOerror: %s" % e)
+                LOG.info("reconnect: IOerror: %s" % e)
             except Exception as e:
                 # NOTE(comstud): Unfortunately it's possible for amqplib
                 # to return an error not covered by its transport
@@ -142,8 +143,7 @@ class Connection(object):
                 # So, we check all exceptions for 'timeout' in them
                 # and try to reconnect in this case.
                 if 'timeout' not in str(e):
-                    if self.logger:
-                        self.logger.LOG(e)
+                    LOG.warning(e)
 
             if self.max_retries and attempt == self.max_retries:
                 msg = ('Unable to connect to AMQP server on '
@@ -178,8 +178,7 @@ class Connection(object):
                 # a protocol response.  (See paste link in LP888621)
                 # So, we check all exceptions for 'timeout' in them
                 # and try to reconnect in this case.
-                if self.logger:
-                    self.logger.LOG(e)
+                LOG.warning(e)
                 if error_callback:
                     error_callback(e)
                 if 'timeout' not in str(e):
@@ -203,8 +202,7 @@ class Connection(object):
         """
 
         def _connect_error(exc):
-            if self.logger:
-                self.logger.LOG("declare_consumer: %s" % exc)
+            LOG.warning("declare_consumer: %s" % exc)
 
         def _declare_consumer():
             consumer = consumer_cls(self.conf, self.channel, queue, callback, {})
@@ -218,8 +216,7 @@ class Connection(object):
         info = {'do_consume': True}
 
         def _error_callback(exc):
-            if self.logger:
-                self.logger.LOG("iterconsume: %s" % str(exc))
+            LOG.warning("iterconsume: %s" % str(exc))
             if isinstance(exc, socket.timeout):
                 raise RPCException(message='timed out')
             else:
@@ -244,8 +241,7 @@ class Connection(object):
         """Send to a publisher based on the publisher class."""
 
         def _error_callback(exc):
-            if self.logger:
-                self.logger.LOG("publisher_send: %s" % str(exc))
+            LOG.warning("publisher_send: %s" % str(exc))
 
         def _publish():
             publisher = cls(self.conf, self.channel, topic, **kwargs)
