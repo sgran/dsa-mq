@@ -113,7 +113,6 @@ class Connection(object):
             self.connection = None
         self.connection = kombu.connection.BrokerConnection(**params)
         self.connection_errors = self.connection.connection_errors
-        LOG.debug("_connect: %s" % self.connection.connection_errors)
         self.connection.connect()
         self.channel = self.connection.channel()
 
