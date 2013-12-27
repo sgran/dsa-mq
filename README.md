@@ -5,6 +5,7 @@ Common libraries for pub/sub messaging in debian
 
 Sample usage for a consumer:
 
+```
 import logging
 from dsa_mq.connection import Connection
 
@@ -25,11 +26,12 @@ conf = {
 conn = Connection(conf=conf)
 conn.declare_fanout_consumer(queue='my_queue', callback=my_callback)
 conn.consume()
-
+```
 
 
 Sample usage for a publisher:
 
+```
 import logging
 from dsa_mq.connection import Connection
 
@@ -51,3 +53,4 @@ msg = {
 
 conn = Connection(conf=conf)
 conn.fanout_send('mail', msg)
+```
