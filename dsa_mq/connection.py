@@ -24,8 +24,8 @@ import logging
 import kombu
 import kombu.connection
 
-from dsa_mq.publisher import FanoutPublisher, DirectPublisher
-from dsa_mq.consumer import FanoutConsumer, DirectConsumer
+from dsa_mq.publisher import FanoutPublisher, DirectPublisher, TopicPublisher
+from dsa_mq.consumer import FanoutConsumer, DirectConsumer, TopicConsumer
 
 LOG = logging.getLogger(__name__)
 
@@ -259,7 +259,7 @@ class Connection(object):
         self.channel = self.connection.channel()
         self.consumers = []
 
-    def declare_consumer(self, consumer_cls, queue, callback):
+    def declare_consumer(self, consumer_cls, queue, callback, **kwargs):
         """Create a Consumer using the class that was passed in and
         add it to our list of consumers
         """
@@ -268,7 +268,7 @@ class Connection(object):
             LOG.warning("declare_consumer: %s" % exc)
 
         def _declare_consumer():
-            consumer = consumer_cls(self.conf, self.channel, queue, callback, {})
+            consumer = consumer_cls(self.conf, self.channel, queue, callback, **kwargs)
             self.consumers.append(consumer)
             return consumer
         return self.ensure(_connect_error, _declare_consumer)
@@ -323,6 +323,14 @@ class Connection(object):
         """
         self.declare_consumer(DirectConsumer, topic, callback)
 
+    def declare_topic_consumer(self, topic, callback=None, queue_name=None,
+                               exchange_name=None, ack_on_error=True):
+        """Create a 'topic' consumer."""
+        self.declare_consumer(TopicConsumer, topic, callback,
+                              exchange_name=exchange_name,
+                              ack_on_error=ack_on_error,
+                              queue_name=queue_name)
+
     def fanout_send(self, topic, msg):
         """Send a 'fanout' message."""
         self.publisher_send(FanoutPublisher, topic, msg)
@@ -330,6 +338,10 @@ class Connection(object):
     def direct_send(self, msg_id, msg):
         """Send a 'direct' message."""
         self.publisher_send(DirectPublisher, msg_id, msg)
+
+    def topic_send(self, topic, msg, timeout=None):
+        """Send a 'topic' message."""
+        self.publisher_send(TopicPublisher, topic, msg, timeout)
 
     def consume(self, limit=None):
         """Consume from all queues/consumers."""

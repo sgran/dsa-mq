@@ -78,3 +78,21 @@ class DirectPublisher(Publisher):
         options.update(kwargs)
         super(DirectPublisher, self).__init__(channel, msg_id, msg_id,
                                               type='direct', **options)
+
+
+class TopicPublisher(Publisher):
+    """Publisher class for 'topic'."""
+    def __init__(self, conf, channel, topic, exchange_name, **kwargs):
+        """init a 'topic' publisher.
+
+        Kombu options may be passed as keyword args to override defaults
+        """
+        options = {'durable': True,
+                   'auto_delete': False,
+                   'exclusive': False}
+        options.update(kwargs)
+        super(TopicPublisher, self).__init__(channel,
+                                             exchange_name,
+                                             topic,
+                                             type='topic',
+                                             **options)

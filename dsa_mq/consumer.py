@@ -163,3 +163,40 @@ class DirectConsumer(ConsumerBase):
                                              exchange=exchange,
                                              routing_key=msg_id,
                                              **options)
+
+
+class TopicConsumer(ConsumerBase):
+    """Consumer class for 'topic'."""
+
+    def __init__(self, conf, channel, topic, callback, tag, name=None,
+                 exchange_name=None, **kwargs):
+        """Init a 'topic' queue.
+
+        :param channel: the amqp channel to use
+        :param topic: the topic to listen on
+        :paramtype topic: str
+        :param callback: the callback to call when messages are received
+        :param tag: a unique ID for the consumer on the channel
+        :param name: optional queue name, defaults to topic
+        :paramtype name: str
+
+        Other kombu options may be passed as keyword arguments
+        """
+        # Default options
+        options = {'durable': True,
+                   'queue_arguments': {'x-ha-policy': 'all'},
+                   'auto_delete': False,
+                   'exclusive': False}
+        options.update(kwargs)
+        exchange_name = exchange_name or topic
+        exchange = kombu.entity.Exchange(name=exchange_name,
+                                         type='topic',
+                                         durable=options['durable'],
+                                         auto_delete=options['auto_delete'])
+        super(TopicConsumer, self).__init__(channel,
+                                            callback,
+                                            tag,
+                                            name=name or topic,
+                                            exchange=exchange,
+                                            routing_key=topic,
+                                            **options)
