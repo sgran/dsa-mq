@@ -27,7 +27,10 @@ conf = {
 
 conn = Connection(conf=conf)
 conn.declare_fanout_consumer(queue='my_queue', callback=my_callback)
-conn.consume()
+try:
+    conn.consume()
+finally:
+    conn.close()
 ```
 
 
