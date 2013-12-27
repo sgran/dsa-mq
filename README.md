@@ -5,7 +5,7 @@ Common libraries for pub/sub messaging in debian
 
 Sample usage for a consumer:
 
-```
+```python
 import logging
 from dsa_mq.connection import Connection
 
@@ -36,7 +36,7 @@ finally:
 
 Sample usage for a publisher:
 
-```
+```python
 import logging
 from dsa_mq.connection import Connection
 
