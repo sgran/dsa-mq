@@ -5,10 +5,6 @@ import time
 
 from dsa_mq.connection import Connection
 
-class Logger(object):
-    def LOG(self, msg):
-        print msg
-
 def my_callback(message):
     last_update = time.time()
     print "Got work item at %s" % last_update
@@ -22,8 +18,7 @@ conf = {
     'use_ssl': False
 }
 
-logger = Logger()
-conn = Connection(conf=conf, logger=logger)
+conn = Connection(conf=conf)
 conn.declare_fanout_consumer(queue='my_user', callback=my_callback)
 
 try:

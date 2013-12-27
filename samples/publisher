@@ -5,10 +5,6 @@ import time
 
 from dsa_mq.connection import Connection
 
-class Logger(object):
-    def LOG(self, msg):
-        print msg
-
 conf = {
     'rabbit_userid': 'my_user',
     'rabbit_password': 'my_password',
@@ -17,8 +13,7 @@ conf = {
     'use_ssl': False
 }
 
-logger = Logger()
-conn = Connection(conf=conf, logger=logger)
+conn = Connection(conf=conf)
 
 msg = {
     'newhead': 'HEAD',
@@ -29,7 +24,6 @@ error = 0
 try:
     conn.fanout_send('mail', msg)
 except Exception, e:
-    logger.Log(e)
     error = 1
 finally:
     conn.close()

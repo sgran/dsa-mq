@@ -38,18 +38,70 @@ class RPCException(Exception):
 
 
 class Connection(object):
-    """Connection object."""
+    """
+    Connection class.  You are expected to pass a dict of config options
+    in the constructor, and then use the object to consume or publish messages
+
+    Sample usage for a consumer:
+
+    import logging
+    from dsa_mq.connection import Connection
+
+    FORMAT = "%(asctime)-15s %(message)s"
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+
+    def my_callback(msg):
+        pass
+
+    conf = {
+        'rabbit_userid': 'my_test_user',
+        'rabbit_password': 'XXXX',
+        'rabbit_virtual_host': 'vhost',
+        'rabbit_hosts': ['pubsub02.debian.org', 'pubsub01.debian.org'],
+        'use_ssl': False
+    }
+
+    conn = Connection(conf=conf)
+    conn.declare_fanout_consumer(queue='my_queue', callback=my_callback)
+    conn.consume()
+
+
+
+    Sample usage for a publisher:
+
+    import logging
+    from dsa_mq.connection import Connection
+
+    FORMAT = "%(asctime)-15s %(message)s"
+    logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+
+    conf = {
+        'rabbit_userid': 'my_test_user',
+        'rabbit_password': 'XXXX',
+        'rabbit_virtual_host': 'vhost',
+        'rabbit_hosts': ['pubsub02.debian.org', 'pubsub01.debian.org'],
+        'use_ssl': False
+    }
+
+    msg = {
+        'newhead': 'HEAD',
+        'updated': time.time()
+    }
+
+    conn = Connection(conf=conf)
+    conn.fanout_send('mail', msg)
+
+    """
 
     pool = None
 
-    def __init__(self, conf, logger=None):
+    def __init__(self, conf):
         self.conf = conf
         self.consumers         = []
         self.max_retries       = conf.get('max_retries', None)
         self.interval_start    = conf.get('interval_start', None) or 1
         self.interval_stepping = conf.get('interval_stepping', None) or 3
         self.interval_max      = conf.get('interval_max', None) or 30
-        self.logger            = logger
 
         params_list = []
         port = 5671
