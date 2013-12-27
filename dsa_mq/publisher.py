@@ -50,6 +50,7 @@ class Publisher(object):
         else:
             self.producer.publish(msg)
 
+
 class FanoutPublisher(Publisher):
     """Publisher class for 'fanout'."""
     def __init__(self, conf, channel, topic, **kwargs):
@@ -63,6 +64,7 @@ class FanoutPublisher(Publisher):
         options.update(kwargs)
         super(FanoutPublisher, self).__init__(channel, '%s' % topic,
                                               None, type='fanout', **options)
+
 
 class DirectPublisher(Publisher):
     """Publisher class for 'direct'."""
