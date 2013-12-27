@@ -12,6 +12,8 @@ from dsa_mq.connection import Connection
 FORMAT = "%(asctime)-15s %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
+LOG = logging.getLogger(__name__)
+
 def my_callback(msg):
     pass
 
@@ -38,6 +40,8 @@ from dsa_mq.connection import Connection
 FORMAT = "%(asctime)-15s %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
+LOG = logging.getLogger(__name__)
+
 conf = {
     'rabbit_userid': 'my_test_user',
     'rabbit_password': 'XXXX',
@@ -52,5 +56,10 @@ msg = {
 }
 
 conn = Connection(conf=conf)
-conn.fanout_send('mail', msg)
+try:
+    conn.fanout_send('my_exchange', msg)
+except Exception, e:
+    LOG.error("Error sending: %s" % e)
+finally:
+    conn.close()
 ```

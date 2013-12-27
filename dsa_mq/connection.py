@@ -50,6 +50,8 @@ class Connection(object):
     FORMAT = "%(asctime)-15s %(message)s"
     logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
+    LOG = logging.getLogger(__name__)
+
     def my_callback(msg):
         pass
 
@@ -63,7 +65,10 @@ class Connection(object):
 
     conn = Connection(conf=conf)
     conn.declare_fanout_consumer(queue='my_queue', callback=my_callback)
-    conn.consume()
+    try:
+        conn.consume()
+    finally:
+        conn.close()
 
 
 
@@ -74,6 +79,8 @@ class Connection(object):
 
     FORMAT = "%(asctime)-15s %(message)s"
     logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+
+    LOG = logging.getLogger(__name__)
 
     conf = {
         'rabbit_userid': 'my_test_user',
@@ -89,7 +96,12 @@ class Connection(object):
     }
 
     conn = Connection(conf=conf)
-    conn.fanout_send('mail', msg)
+    try:
+        conn.fanout_send('my_exchange', msg)
+    except Exception, e:
+        LOG.error("Error sending: %s" % e)
+    finally:
+        conn.close()
 
     """
 
