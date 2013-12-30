@@ -24,8 +24,8 @@ import logging
 import kombu
 import kombu.connection
 
-from dsa_mq.publisher import FanoutPublisher, DirectPublisher, TopicPublisher
-from dsa_mq.consumer import FanoutConsumer, DirectConsumer, TopicConsumer
+from dsa_mq.publisher import TopicPublisher
+from dsa_mq.consumer import TopicConsumer
 
 LOG = logging.getLogger(__name__)
 
@@ -42,7 +42,11 @@ class Connection(object):
     Connection class.  You are expected to pass a dict of config options
     in the constructor, and then use the object to consume or publish messages
 
+
+    ################################################################
+
     Sample usage for a consumer:
+
 
     import logging
     from dsa_mq.connection import Connection
@@ -64,15 +68,21 @@ class Connection(object):
     }
 
     conn = Connection(conf=conf)
-    conn.declare_fanout_consumer(queue='my_queue', callback=my_callback)
+    conn.declare_topic_consumer('dsa.git.mail',
+                                callback=my_callback,
+                                queue_name='my_queue',
+                                exchange_name='dsa',
+                                ack_on_error=False)
+
     try:
         conn.consume()
     finally:
         conn.close()
 
-
+    ################################################################
 
     Sample usage for a publisher:
+
 
     import logging
     from dsa_mq.connection import Connection
@@ -97,11 +107,13 @@ class Connection(object):
 
     conn = Connection(conf=conf)
     try:
-        conn.fanout_send('my_exchange', msg)
+        conn.topic_send('dsa.git.mail', msg, exchange_name='dsa', timeout=5)
     except Exception, e:
         LOG.error("Error sending: %s" % e)
     finally:
         conn.close()
+
+    ################################################################
 
     """
 
@@ -259,7 +271,7 @@ class Connection(object):
         self.channel = self.connection.channel()
         self.consumers = []
 
-    def declare_consumer(self, consumer_cls, queue, callback, **kwargs):
+    def declare_consumer(self, consumer_cls, topic, callback, **kwargs):
         """Create a Consumer using the class that was passed in and
         add it to our list of consumers
         """
@@ -268,7 +280,7 @@ class Connection(object):
             LOG.warning("declare_consumer: %s" % exc)
 
         def _declare_consumer():
-            consumer = consumer_cls(self.conf, self.channel, queue, callback, **kwargs)
+            consumer = consumer_cls(self.conf, self.channel, topic, callback, **kwargs)
             self.consumers.append(consumer)
             return consumer
         return self.ensure(_connect_error, _declare_consumer)
@@ -300,28 +312,17 @@ class Connection(object):
                 raise StopIteration
             yield self.ensure(_error_callback, _consume)
 
-    def publisher_send(self, cls, topic, msg, timeout=None, **kwargs):
+    def publisher_send(self, cls, topic, msg, exchange_name, timeout=None, **kwargs):
         """Send to a publisher based on the publisher class."""
 
         def _error_callback(exc):
             LOG.warning("publisher_send: %s" % str(exc))
 
         def _publish():
-            publisher = cls(self.conf, self.channel, topic, **kwargs)
+            publisher = cls(self.conf, self.channel, topic, exchange_name, **kwargs)
             publisher.send(msg, timeout)
 
         self.ensure(_error_callback, _publish)
-
-    def declare_fanout_consumer(self, queue, callback):
-        """Create a 'fanout' consumer."""
-        self.declare_consumer(FanoutConsumer, queue, callback)
-
-    def declare_direct_consumer(self, topic, callback):
-        """Create a 'direct' queue.
-        In our use, this is generally a msg_id queue used for
-        responses for call/multicall
-        """
-        self.declare_consumer(DirectConsumer, topic, callback)
 
     def declare_topic_consumer(self, topic, callback=None, queue_name=None,
                                exchange_name=None, ack_on_error=True):
@@ -331,17 +332,11 @@ class Connection(object):
                               ack_on_error=ack_on_error,
                               queue_name=queue_name)
 
-    def fanout_send(self, topic, msg):
-        """Send a 'fanout' message."""
-        self.publisher_send(FanoutPublisher, topic, msg)
-
-    def direct_send(self, msg_id, msg):
-        """Send a 'direct' message."""
-        self.publisher_send(DirectPublisher, msg_id, msg)
-
-    def topic_send(self, topic, msg, timeout=None):
+    def topic_send(self, topic, msg, exchange_name=None, timeout=None):
         """Send a 'topic' message."""
-        self.publisher_send(TopicPublisher, topic, msg, timeout)
+        if exchange_name is None:
+            exchange_name = topic
+        self.publisher_send(TopicPublisher, topic, msg, exchange_name, timeout)
 
     def consume(self, limit=None):
         """Consume from all queues/consumers."""

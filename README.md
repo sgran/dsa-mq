@@ -26,7 +26,12 @@ conf = {
 }
 
 conn = Connection(conf=conf)
-conn.declare_fanout_consumer(queue='my_queue', callback=my_callback)
+conn.declare_topic_consumer('dsa.git.mail',
+                            callback=my_callback,
+                            queue_name='my_queue',
+                            exchange_name='dsa',
+                            ack_on_error=False)
+
 try:
     conn.consume()
 finally:
@@ -60,7 +65,7 @@ msg = {
 
 conn = Connection(conf=conf)
 try:
-    conn.fanout_send('my_exchange', msg)
+    conn.topic_send('dsa.git.mail', msg, exchange_name='dsa', timeout=5)
 except Exception, e:
     LOG.error("Error sending: %s" % e)
 finally:
