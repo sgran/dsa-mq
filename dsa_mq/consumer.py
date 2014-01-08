@@ -46,6 +46,7 @@ class ConsumerBase(object):
         self.channel = channel
         self.kwargs['channel'] = channel
         self.queue = kombu.entity.Queue(**self.kwargs)
+        self.queue.declare()
 
     def _callback_handler(self, message, callback):
         """Call callback with deserialized message.
