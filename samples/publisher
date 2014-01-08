@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import logging
 import sys
 import time
@@ -12,23 +11,22 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 LOG = logging.getLogger(__name__)
 
 conf = {
-    'rabbit_userid': 'my_user',
-    'rabbit_password': 'my_password',
-    'rabbit_virtual_host': 'dsa',
-    'rabbit_hosts': ['pubsub01.debian.org', 'pubsub02.debian.org'],
+    'rabbit_userid': 'my_test_user',
+    'rabbit_password': 'XXXX',
+    'rabbit_virtual_host': 'vhost',
+    'rabbit_hosts': ['pubsub02.debian.org', 'pubsub01.debian.org'],
     'use_ssl': False
 }
-
-conn = Connection(conf=conf)
 
 msg = {
     'newhead': 'HEAD',
     'updated': time.time()
 }
 
+conn = Connection(conf=conf)
 error = 0
 try:
-    conn.fanout_send('mail', msg)
+    conn.topic_send('dsa.git.mail', msg, exchange_name='dsa', timeout=5)
 except Exception, e:
     LOG.error("Error sending: %s" % e)
     error = 1
