@@ -209,7 +209,9 @@ class Connection(object):
                 self._connect(params)
                 return
             except (IOError, self.connection_errors) as e:
-                LOG.info("reconnect: IOerror: %s" % e)
+                if str(e) == 'Socket closed':
+                    e = 'Socket closed (probably authentication failure)'
+                LOG.warning("reconnect: IOerror: %s" % e)
             except Exception as e:
                 # NOTE(comstud): Unfortunately it's possible for amqplib
                 # to return an error not covered by its transport
@@ -227,7 +229,6 @@ class Connection(object):
                                         params['port'],
                                         attempt,
                                         e)
-                print msg
                 raise RPCException(message=msg)
 
             if attempt == 1:
