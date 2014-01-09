@@ -22,7 +22,8 @@ This will not work.  Please go do so now.
 """
 
 parser = OptionParser(description=description,
-                      epilog=epilog)
+                      epilog=epilog,
+                      version='0.1')
 
 parser.add_option("-d", "--debug",
                   action="store_true", default=False,

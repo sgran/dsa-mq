@@ -9,4 +9,5 @@ Package: python-dsa-mq
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}
 Description: Common libraries for pub/sub messaging in debian
-
+ Intended to provide a consistent access to Pub/Sub messaging
+ for debian.org hosts and projects
