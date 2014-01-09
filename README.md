@@ -6,7 +6,9 @@ Common libraries for pub/sub messaging in debian
 sample code is included under samples/
 
 Scripts:
+```
 bin/logger.py: submit messages
+```
 
 Code excerpts:
 
