@@ -1,1 +1,3 @@
-dsa_mq/*.pyc
+*.pyc
+.*.swp
+build/
