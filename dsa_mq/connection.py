@@ -122,10 +122,10 @@ class Connection(object):
     def __init__(self, conf):
         self.conf = conf
         self.consumers         = []
-        self.max_retries       = conf.get('max_retries', None)
-        self.interval_start    = conf.get('interval_start', None) or 1
-        self.interval_stepping = conf.get('interval_stepping', None) or 3
-        self.interval_max      = conf.get('interval_max', None) or 30
+        self.max_retries       = conf.get('max_retries', 3)
+        self.interval_start    = conf.get('interval_start', 1)
+        self.interval_stepping = conf.get('interval_stepping', 3)
+        self.interval_max      = conf.get('interval_max', 30)
 
         params_list = []
         port = 5671
