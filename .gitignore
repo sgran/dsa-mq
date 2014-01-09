@@ -1,3 +1,9 @@
 *.pyc
 .*.swp
 build/
+debian/files
+debian/python-dsa-mq.debhelper.log
+debian/python-dsa-mq.postinst.debhelper
+debian/python-dsa-mq.prerm.debhelper
+debian/python-dsa-mq.substvars
+debian/python-dsa-mq/
