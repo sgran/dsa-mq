@@ -116,7 +116,7 @@ def git_pull(message):
     last_update = time.time()
     LOG.debug("Got commit message at %s" % last_update)
     curdir = os.getcwd()
-    os.chdir(options.git)
+    os.chdir(get_value('git'))
     command = ['/usr/bin/git', 'pull']
     try:
         subprocess.check_call(command)
