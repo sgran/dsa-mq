@@ -145,6 +145,7 @@ class Connection(object):
             }
 
             params['ssl'] = self._fetch_ssl_params()
+            params['login_method'] = self.conf.get('login_method'):
             params_list.append(params)
 
         self.params_list = params_list
@@ -160,15 +161,15 @@ class Connection(object):
         ssl_params = dict()
 
         if self.conf['use_ssl']:
-            if self.conf['ssl_keyfile']:
+            if self.conf.get('ssl_keyfile'):
                 ssl_params['keyfile'] = self.conf['ssl_keyfile']
-            if self.conf['ssl_certfile']:
+            if self.conf.get('ssl_certfile'):
                 ssl_params['certfile'] = self.conf['ssl_certfile']
-            if self.conf['ssl_ca_certs']:
+            if self.conf.get('ssl_ca_certs'):
                 ssl_params['ca_certs'] = self.conf['ssl_ca_certs']
 
         if not ssl_params:
-            # Just have the default behavior
+            # Just have the default behavior, which is to be an SSL client
             return True
         else:
             # Return the extended behavior
