@@ -104,6 +104,14 @@ for item in ['username', 'password', 'vhost',
         print("%s cannot be absent!" % item)
         sys.exit(1)
 
+conf = {
+    'rabbit_userid': get_value('username'),
+    'rabbit_password': get_value('password'),
+    'rabbit_virtual_host': get_value('vhost'),
+    'rabbit_hosts': ['pubsub02.debian.org', 'pubsub01.debian.org'],
+    'use_ssl': False
+}
+
 def git_pull(message):
     last_update = time.time()
     LOG.debug("Got commit message at %s" % last_update)
@@ -120,7 +128,7 @@ def git_pull(message):
     LOG.debug(message)
 
 conn = Connection(conf=conf)
-conn.declare_topic_consumer(get_value('topic')
+conn.declare_topic_consumer(get_value('topic'),
                             callback=git_pull,
                             queue_name=get_value('queue'),
                             exchange_name=get_value('exchange'),
