@@ -15,14 +15,14 @@
 import ConfigParser
 
 class Config(object):
-    def __init_(self, options):
+    def __init__(self, options):
 
         if getattr(options, 'section') is None:
             raise AttributeError("need to know section")
 
         self.files = ['/etc/dsa/pubsub.conf', '~/.pubsub.conf']
         self.entries = ['username', 'password', 'vhost', 'exchange',
-                        'topic', 'queue', 'git']
+                        'topic', 'queue', 'git', 'debug']
         self.config = {}
 
         config = ConfigParser.ConfigParser()
@@ -32,13 +32,13 @@ class Config(object):
 
         files = config.read(options.config)
 
-        for entry in config.entries:
+        for entry in config.options(options.section):
             if entry in self.entries:
                 self.config[entry] = config.get(options.section, entry)
 
         for entry in self.entries:
-            if getattr(options, entry):
-                self.config[entry] = options.entry
+            if options.__dict__.get(entry):
+                self.config[entry] = options.__dict__.get(entry)
 
     def __getattr__(self, key):
         return self.config[key]

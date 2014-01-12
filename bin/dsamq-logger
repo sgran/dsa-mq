@@ -84,7 +84,7 @@ logging.basicConfig(format=FORMAT, level=lvl)
 LOG = logging.getLogger(__name__)
 
 for item in ['username', 'password', 'vhost', 'exchange', 'topic']:
-    if getattr(config, item is None:
+    if getattr(config, item) is None:
         print("%s cannot be absent!" % item)
         sys.exit(1)
 
