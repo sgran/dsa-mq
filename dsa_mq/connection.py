@@ -145,7 +145,7 @@ class Connection(object):
             }
 
             params['ssl'] = self._fetch_ssl_params()
-            params['login_method'] = self.conf.get('login_method'):
+            params['login_method'] = self.conf.get('login_method')
             params_list.append(params)
 
         self.params_list = params_list
