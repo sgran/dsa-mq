@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import ConfigParser
 import logging
 from optparse import OptionGroup, OptionParser
 import os
