@@ -40,5 +40,5 @@ class Config(object):
             if options.__dict__.get(entry):
                 self.config[entry] = options.__dict__.get(entry)
 
-    def __getattr__(self, key):
-        return self.config[key]
+    def __getattr__(self, key, default=None):
+        return self.config.get(key, default)
