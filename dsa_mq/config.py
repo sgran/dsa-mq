@@ -13,6 +13,7 @@
 #    under the License.
 
 import ConfigParser
+import os
 
 class Config(object):
     def __init__(self, options):
@@ -20,7 +21,8 @@ class Config(object):
         if getattr(options, 'section', None) is None:
             raise AttributeError("need to know section")
 
-        self.files = ['/etc/dsa/pubsub.conf', '~/.pubsub.conf']
+        self.files = ['/etc/dsa/pubsub.conf',
+                      os.path.expanduser('~/.pubsub.conf')]
         self.entries = ['username', 'password', 'vhost', 'exchange',
                         'topic', 'queue', 'git', 'debug']
         self.config = {}
