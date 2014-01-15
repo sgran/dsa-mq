@@ -1,3 +1,9 @@
+dsa-mq (0.2) unstable; urgency=low
+
+  * Fix infinite loop in listeners on server shutdown
+
+ -- Stephen Gran <sgran@debian.org>  Wed, 15 Jan 2014 07:33:22 +0000
+
 dsa-mq (0.1) unstable; urgency=low
 
   * Initial release

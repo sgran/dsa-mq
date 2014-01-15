@@ -126,6 +126,8 @@ class Connection(object):
         self.interval_start    = conf.get('interval_start', 1)
         self.interval_stepping = conf.get('interval_stepping', 3)
         self.interval_max      = conf.get('interval_max', 30)
+        if self.max_retries <= 0:
+            self.max_retries = None
 
         params_list = []
         port = 5671
@@ -180,18 +182,20 @@ class Connection(object):
         been declared before if we are reconnecting.  Exceptions should
         be handled by the caller.
         """
+
         if self.connection:
-            try:
-                self.connection.release()
-            except self.connection_errors:
-                pass
-            # Setting this in case the next statement fails, though
-            # it shouldn't be doing any network operations, yet.
-            self.connection = None
+            LOG.info("Reconnecting to AMQP server on "
+                       "%(hostname)s:%(port)d" % params)
+
+        self.close()
         self.connection = kombu.connection.BrokerConnection(**params)
         self.connection_errors = self.connection.connection_errors
         self.connection.connect()
         self.channel = self.connection.channel()
+
+        for consumer in self.consumers:
+            consumer.reconnect(self.channel)
+        LOG.info('Connected to AMQP server on %(hostname)s:%(port)d' % params)
 
     def reconnect(self):
         """Handles reconnecting and re-establishing queues.
@@ -203,7 +207,9 @@ class Connection(object):
         """
 
         attempt = 0
-        while True:
+        # If self.max_tries is false-ish, we loop forever.  Otherwise, we
+        # only loop for max_retries
+        while (not self.max_retries) or (attempt < self.max_retries):
             params = self.params_list[attempt % len(self.params_list)]
             attempt += 1
             try:
@@ -223,15 +229,6 @@ class Connection(object):
                 if 'timeout' not in str(e):
                     LOG.warning(e)
 
-            if self.max_retries and attempt == self.max_retries:
-                msg = ('Unable to connect to AMQP server on '
-                        '%s:%d after %d '
-                        'tries: %s') % (params['hostname'], 
-                                        params['port'],
-                                        attempt,
-                                        e)
-                raise RPCException(message=msg)
-
             if attempt == 1:
                 sleep_time = self.interval_start or 1
             elif attempt > 1:
@@ -240,6 +237,14 @@ class Connection(object):
                 sleep_time = min(sleep_time, self.interval_max)
 
             time.sleep(sleep_time)
+
+        msg = ('Unable to connect to AMQP server on '
+                '%s:%d after %d '
+                'tries: %s') % (params['hostname'],
+                                params['port'],
+                                attempt,
+                                e)
+        raise RPCException(message=msg)
 
     def ensure(self, error_callback, method, *args, **kwargs):
         while True:
@@ -264,7 +269,11 @@ class Connection(object):
 
     def close(self):
         """Close/release this connection."""
-        self.connection.release()
+        if self.connection:
+            try:
+                self.connection.release()
+            except self.connection_errors:
+                pass
         self.connection = None
 
     def reset(self):
