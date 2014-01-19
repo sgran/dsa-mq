@@ -144,6 +144,7 @@ class Connection(object):
                 'userid': self.conf['rabbit_userid'],
                 'password': self.conf['rabbit_password'],
                 'virtual_host': self.conf['rabbit_virtual_host'],
+                'heartbeat': self.conf.get('heartbeat', 60),
             }
 
             params['ssl'] = self._fetch_ssl_params()
