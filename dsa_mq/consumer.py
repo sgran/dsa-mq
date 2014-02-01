@@ -54,9 +54,8 @@ class ConsumerBase(object):
         Messages that are processed without exception are ack'ed.
 
         If the message processing generates an exception, it will be
-        ack'ed if ack_on_error=True. Otherwise it will be .reject()'ed.
+        ack'ed if ack_on_error=True. Otherwise it will be .requeue()'ed.
         Rejection is better than waiting for the message to timeout.
-        Rejected messages are immediately requeued.
         """
 
         ack_msg = False
@@ -66,12 +65,11 @@ class ConsumerBase(object):
             ack_msg = True
         except Exception:
             if self.ack_on_error:
-                ack_msg = True
-        finally:
-            if ack_msg:
                 message.ack()
             else:
-                message.reject()
+                message.requeue()
+        else:
+            message.ack()
 
     def consume(self, *args, **kwargs):
         """Actually declare the consumer on the amqp channel.  This will
