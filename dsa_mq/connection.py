@@ -171,12 +171,7 @@ class Connection(object):
             if self.conf.get('ssl_ca_certs'):
                 ssl_params['ca_certs'] = self.conf['ssl_ca_certs']
 
-        if not ssl_params:
-            # Just have the default behavior, which is to be an SSL client
-            return True
-        else:
-            # Return the extended behavior
-            return ssl_params
+        return ssl_params or True
 
     def _connect(self, params):
         """Connect to rabbit.  Re-establish any queues that may have
