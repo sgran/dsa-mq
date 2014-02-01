@@ -36,6 +36,13 @@ class RPCException(Exception):
             message = "An unknown RPC related exception occurred."
         super(RPCException, self).__init__(message)
 
+class RPCTimeOutException(RPCException):
+
+    def __init__(self, message=None, **kwargs):
+        if not message:
+            message = "timed out"
+        super(RPCTimeOutException, self).__init__(message)
+
 
 class Connection(object):
     """
@@ -303,7 +310,7 @@ class Connection(object):
         def _error_callback(exc):
             LOG.warning("iterconsume: %s" % str(exc))
             if isinstance(exc, socket.timeout):
-                raise RPCException(message='timed out')
+                raise RPCTimeOutException(message='timed out')
             else:
                 info['do_consume'] = True
 
@@ -322,8 +329,9 @@ class Connection(object):
                 raise StopIteration
             try:
                 yield self.ensure(_error_callback, _consume)
-            except socket.timeout:
-                self.connection.heartbeat_check()
+            except RPCTimeOutException:
+                if hasattr(self.connection, 'heartbeat_check'):
+                    self.connection.heartbeat_check()
 
     def publisher_send(self, cls, topic, msg, exchange_name, timeout=None, **kwargs):
         """Send to a publisher based on the publisher class."""
