@@ -297,6 +297,9 @@ class Connection(object):
 
         info = {'do_consume': True}
 
+        if not timeout:
+            timeout = int(int(self.conf.get('heartbeat', 60)) / 2)
+
         def _error_callback(exc):
             LOG.warning("iterconsume: %s" % str(exc))
             if isinstance(exc, socket.timeout):
@@ -312,7 +315,10 @@ class Connection(object):
                     queue.consume(nowait=True)
                 queues_tail.consume(nowait=False)
                 info['do_consume'] = False
-            return self.connection.drain_events(timeout=timeout)
+            try:
+                return self.connection.drain_events(timeout=timeout)
+            except:
+                self.connection.heartbeat_check()
 
         for iteration in itertools.count(0):
             if limit and iteration >= limit:
