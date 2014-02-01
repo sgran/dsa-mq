@@ -315,15 +315,15 @@ class Connection(object):
                     queue.consume(nowait=True)
                 queues_tail.consume(nowait=False)
                 info['do_consume'] = False
-            try:
-                return self.connection.drain_events(timeout=timeout)
-            except:
-                self.connection.heartbeat_check()
+            return self.connection.drain_events(timeout=timeout)
 
         for iteration in itertools.count(0):
             if limit and iteration >= limit:
                 raise StopIteration
-            yield self.ensure(_error_callback, _consume)
+            try:
+                yield self.ensure(_error_callback, _consume)
+            except socket.timeout:
+                self.connection.heartbeat_check()
 
     def publisher_send(self, cls, topic, msg, exchange_name, timeout=None, **kwargs):
         """Send to a publisher based on the publisher class."""
