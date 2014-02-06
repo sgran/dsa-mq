@@ -20,6 +20,7 @@ import time
 import socket
 import itertools
 import logging
+import random
 
 import kombu
 import kombu.connection
@@ -210,10 +211,11 @@ class Connection(object):
         """
 
         attempt = 0
+        offset = random.randint(0, len(self.params_list))
         # If self.max_tries is false-ish, we loop forever.  Otherwise, we
         # only loop for max_retries
         while (not self.max_retries) or (attempt < self.max_retries):
-            params = self.params_list[attempt % len(self.params_list)]
+            params = self.params_list[(attempt+offset) % len(self.params_list)]
             attempt += 1
             try:
                 self._connect(params)
